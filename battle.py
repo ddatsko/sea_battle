@@ -132,7 +132,12 @@ class Field:
                     assert (ships[length - 1] <= 4 - length)
                     break
                 except:
-                    print("Only numbers from 1 to 4 are acceptable")
+                    print("Only numbers from 1 to 4 are acceptable\n"
+                          "Notice, thet there may not be more than:\n"
+                          "4 ships of length 1\n"
+                          "3 ships of length 2\n"
+                          "2 ships of length 3\n"
+                          "1 ship of length 4")
 
             # if user wants to choose another position
             if length == -1:
@@ -183,7 +188,11 @@ class Field:
         x, y = position
         if (x, y) not in self.shot:
             if self.__cells[x][y]:
-                return self.__cells[x][y].shoot_at((x, y))
+                res = self.__cells[x][y].shoot_at((x, y))
+                if self.__cells[x][y].is_killed():
+                    self.draw_dots_near_ship(self.__cells[x][y])
+                return res
+
             else:
                 self.shot.add((x, y))
                 return "missed"
@@ -219,10 +228,24 @@ class Field:
                 if self.__cells[i][j]:
                     cell = (self.__cells[i][j].view(i, j, show_ships))
                 else:
-                    cell = "·" if (i, j) in self.shot else "_"
+                    cell = "•" if (i, j) in self.shot else "_"
                 res += "𝖨{}".format(cell)
             res += "𝖨\n"
         return res
+
+    def draw_dots_near_ship(self, ship):
+        """
+        Draw dots near killed ship
+        :param ship: Ship on the field
+        """
+        check_x = [-1, -1, 0, 1, 1, 1, 0, -1]
+        check_y = [0, 1, 1, 1, 0, -1, -1, -1]
+        for i in ship.fields:
+            x, y = i[0], i[1]
+            for j in range(8):
+                if 0 <= x + check_x[j] < 10 and 0 <= y + check_y[j] and \
+                        not (self.__cells[x + check_x[j]][y + check_y[j]]):
+                    self.shot.add((x + check_x[j], y + check_y[j]))
 
 
 class Ship:
@@ -258,6 +281,13 @@ class Ship:
         self.fields.remove((x, y, False))
         self.fields.append((x, y, True))
         return "shot"
+
+    def is_killed(self):
+        """
+        (Ship) -> bool
+        :return: whether the ship is killed
+        """
+        return self.__length == self.hit
 
     def view(self, x, y, show_ships):
         """
