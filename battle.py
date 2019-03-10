@@ -99,7 +99,7 @@ class Field:
         """
         ships = [0] * 4
         # loop untill all the 10 ships are read
-        while sum(ships) < 1:
+        while sum(ships) < 10:
             os.system("clear")
 
             # show the field
